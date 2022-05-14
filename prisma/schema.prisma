@@ -1,0 +1,255 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
+  number String         @unique
+  city   String
+  street String
+  house  String
+  isWork Boolean        @default(true)
+  type   DepartmentType @default(DEPARTMENT)
+
+  Employee          Employee[]
+  Operation         Operation[]
+  Communal          Communal[]
+  AccountDepartment AccountDepartment[]
+  Encashment        Encashment[]
+}
+
+model Employee {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  name       String
+  patronymic String?
+  surname    String
+
+  login      String       @unique
+  password   String
+  phone      String
+  role       Role
+  isWork     Boolean
+  Communal   Communal[]
+  Operation  Operation[]
+  Encashment Encashment[]
+}
+
+model Client {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
+  name       String
+  patronymic String?
+  surname    String
+  sex        Sex
+  phone      String
+  birthDay   Int
+  inn        String  @unique
+
+  city   String
+  street String
+  house  String
+  flat   String?
+
+  // pasport
+  series     String
+  number     String
+  isSued     String
+  isSuedDate Int
+  Individual Individual[]
+  Legal      Legal[]
+}
+
+model Operation {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
+  name       String
+  patronymic String?
+  surname    String
+
+  numberAccount String
+  departmentId  Int
+  department    Department @relation(fields: [departmentId], references: [id])
+
+
+  operator   Employee? @relation(fields: [employeeId], references: [id])
+  employeeId Int?
+  cashierId  Int       @default(0)
+
+  type      TypeOperation
+  number    String        @unique
+  currency  Currency
+  money     Float
+  inn       String
+  isConfirm Boolean
+  purpose   String
+}
+
+model Communal {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
+  number     String     @unique
+  name       String
+  patronymic String?
+  surname    String
+  city       String
+  street     String
+  house      String
+  flat       String?
+  employee   Employee   @relation(fields: [employeeId], references: [id])
+  department Department @relation(fields: [departmentId], references: [id])
+
+  departmentId Int
+  employeeId   Int
+  CommunalData CommunalData[]
+}
+
+model CommunalData {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
+  communal     Communal  @relation(fields: [communalId], references: [id])
+  communalType LegalType
+
+  startData    Int?
+  endData      Int?
+  startCounter Int?
+  endCounter   Int?
+  money        Float
+  communalId   Int
+}
+
+model Individual {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
+  client   Client @relation(fields: [clientId], references: [id])
+  clientId Int
+
+  number   String   @unique
+  currency Currency
+  money    Float    @default(0)
+}
+
+model Legal {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
+  client   Client @relation(fields: [clientId], references: [id])
+  clientId Int
+
+  title    String
+  inn      Int       @unique
+  number   String    @unique
+  currency Currency
+  money    Float     @default(0)
+  type     LegalType
+
+}
+
+model AccountDepartment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  departmentId Int
+  number       String     @unique
+  currency     Currency
+  money        Float      @default(0)
+}
+
+model Encashment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
+  ValueEncashment ValueEncashment[]
+  departament     Department        @relation(fields: [departmentId], references: [id])
+  departmentId    Int
+
+  operatorId Int
+  operator   Employee @relation(fields: [operatorId], references: [id])
+
+  cashierId Int? @default(0)
+
+  isAdmin   Boolean
+  isCashier Boolean
+  type      TypeEncashment
+}
+
+model ValueEncashment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
+  encashment   Encashment @relation(fields: [encashmentId], references: [id], onDelete: Cascade)
+  encashmentId Int
+  currency     Currency
+  money        Float
+}
+
+enum TypeEncashment {
+  ENCASHMENT
+  REINFORCEMENT
+}
+
+enum Currency {
+  USD
+  RUB
+  EUR
+  UAH
+}
+
+enum TypeOperation {
+  EXPENSE
+  ARRIVAL
+}
+
+enum Sex {
+  MEN
+  WOOMEN
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+  CASHIER
+}
+
+enum LegalType {
+  WATER
+  GAS
+  LIGHT
+  COMPANY
+}
+
+enum DepartmentType {
+  BANK
+  DEPARTMENT
+}
