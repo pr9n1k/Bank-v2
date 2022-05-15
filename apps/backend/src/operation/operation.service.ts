@@ -1,6 +1,10 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
-import { createOperation, operationConfirm } from '@bank-v2/interface';
+import {
+  createOperation,
+  operationConfirm,
+  queryPagination,
+} from '@bank-v2/interface';
 import { randomString } from './../utils/util-random';
 import { EmployeeService } from './../employee/employee.service';
 import { AccountDepartmentService } from './../account/account-department/account-department.service';
@@ -65,25 +69,46 @@ export class OperationService {
       },
     });
   }
-  async get() {
-    return await this.prisma.operation.findMany();
+  async get(dto?: queryPagination) {
+    const total = await this.prisma.operation.count();
+    const limit =
+      !parseInt(dto.limit) || dto.limit === '-1' ? total : parseInt(dto.limit);
+    const page =
+      parseInt(dto.limit) && parseInt(dto.page) ? parseInt(dto.page) : 0;
+    const operation = await this.prisma.operation.findMany({
+      skip: page * limit,
+      take: limit,
+    });
+    return { value: operation, total };
   }
   async getById(id: number) {
     return await this.prisma.operation.findUnique({
       where: { id },
     });
   }
-  async getByNotConfirm(id: number) {
+  async getByNotConfirm(id: number, dto?: queryPagination) {
     if (!id) {
       throw new HttpException('id не указан', HttpStatus.BAD_REQUEST);
     }
     const employee = await this.employeeService.getById(id);
-    return await this.prisma.operation.findMany({
+    const total = await this.prisma.operation.count({
       where: {
         departmentId: employee.departmentId,
         isConfirm: false,
       },
     });
+    const limit =
+      !dto.limit || dto.limit === '-1' ? total : parseInt(dto.limit);
+    const page = dto.limit && dto.page ? parseInt(dto.page) : 0;
+    const operation = await this.prisma.operation.findMany({
+      where: {
+        departmentId: employee.departmentId,
+        isConfirm: false,
+      },
+      skip: page * limit,
+      take: limit,
+    });
+    return { value: operation, total };
   }
   async confirm(dto: operationConfirm) {
     const operation = await this.getById(dto.id);
@@ -115,7 +140,7 @@ export class OperationService {
         });
       } else if (
         candidateIndividual &&
-        candidateIndividual.money > operation.money
+        candidateIndividual.money >= operation.money
       ) {
         await this.prisma.individual.update({
           where: { id: candidateIndividual.id },

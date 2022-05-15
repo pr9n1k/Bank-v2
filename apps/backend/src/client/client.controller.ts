@@ -21,9 +21,8 @@ export class ClientController {
   }
 
   @Get('/get')
-  async get(@Query() query: queryPagination) {
-    const response = await this.service.get(query);
-    return response;
+  get(@Query() query?: queryPagination) {
+    return this.service.get(query);
   }
   @Get('get/:id')
   getById(@Param('id') id: string) {

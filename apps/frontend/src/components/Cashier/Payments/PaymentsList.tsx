@@ -2,30 +2,28 @@ import { List, Pagination } from 'antd';
 import { operationAPI } from '../../../../src/service/operationServise';
 import React, { useState } from 'react';
 import PaymentsItem from './PaymentsItem';
+import { limit } from '@bank-v2/const';
 
 const PaymentnsList = () => {
   const idEmployee = localStorage.getItem('user') || '';
-  const [page, setPage] = useState(1);
-  const { data, error, isLoading } = operationAPI.useGetNotConfirmQuery(
-    parseInt(idEmployee)
-  );
-  // const totalCount = data && data.number ? data.number : 0 ;
+  const [page, setPage] = useState('1');
+  const { data } = operationAPI.useGetNotConfirmQuery({
+    id: parseInt(idEmployee),
+    limit: limit,
+    page,
+  });
+  const totalCount = data && data.total ? data.total : 0;
   const onChange = (page: number) => {
-    setPage(page);
+    setPage(page.toString());
   };
-  if (!data?.length) {
+  if (!data?.value.length) {
     return <h1 className="h1 title">Список пуст</h1>;
   }
-  // if(error){
-  //    return <h1>{error}</h1>
-  // }
-  // if(isLoading){
-  //     return <h1>Загрузка..</h1>
-  // }
+
   return (
     <>
       <h1 className="h1 title">Платежи</h1>
-      <div style={{ flex: '1 0 auto' }}>
+      <div className="flex-auto">
         <List
           grid={{
             gutter: 16,
@@ -36,7 +34,7 @@ const PaymentnsList = () => {
             xl: 3,
             xxl: 3,
           }}
-          dataSource={data}
+          dataSource={data.value}
           renderItem={(item) => (
             <List.Item>
               <PaymentsItem operation={item} />
@@ -44,9 +42,15 @@ const PaymentnsList = () => {
           )}
         />
       </div>
-      {/* {totalCount > 6 &&  
-              <Pagination current={page} onChange={onChange} total={totalCount} defaultPageSize={6} defaultCurrent={1}/>
-            } */}
+      {totalCount > 6 && (
+        <Pagination
+          current={parseInt(page)}
+          onChange={onChange}
+          total={totalCount}
+          defaultPageSize={6}
+          defaultCurrent={1}
+        />
+      )}
     </>
   );
 };

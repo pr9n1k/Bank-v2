@@ -25,7 +25,7 @@ const Cashier = () => {
                 Коммуналльные услуги
               </Menu.Item>
               <Menu.Item key="3" onClick={() => router('/cashier/payments')}>
-                Платежи
+                Операции
               </Menu.Item>
               <Menu.Item key="4" onClick={() => router('/cashier/encashment')}>
                 Инкассация

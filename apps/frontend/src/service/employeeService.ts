@@ -1,24 +1,21 @@
 import { Employee } from '@prisma/client';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { createEmployee } from '@bank-v2/interface';
+import {
+  createEmployee,
+  getDataList,
+  queryPagination,
+} from '@bank-v2/interface';
 
 export const employeeAPI = createApi({
   reducerPath: 'employeeAPI',
   baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:3333' }),
   tagTypes: ['Employee'],
   endpoints: (build) => ({
-    get: build.query<
-      {
-        employee: Employee[];
-        total: number;
-      },
-      {
-        limit?: number;
-        page: number;
-      }
-    >({
-      query: (args = { limit: 0, page: 1 }) => ({
-        url: `/employee/get?limit=${args.limit}&page=${args.page - 1}`,
+    get: build.query<getDataList<Employee>, queryPagination | void>({
+      query: (args) => ({
+        url: `/employee/get?limit=${args && args.limit}&page=${
+          args && args.page ? parseInt(args.page) - 1 : ''
+        }`,
       }),
       providesTags: ['Employee'],
     }),
@@ -28,9 +25,11 @@ export const employeeAPI = createApi({
       }),
       providesTags: ['Employee'],
     }),
-    getNotWork: build.query<Employee[], void>({
-      query: () => ({
-        url: `/employee/get-not-work`,
+    getNotWork: build.query<getDataList<Employee>, queryPagination | void>({
+      query: (args) => ({
+        url: `/employee/get-not-work?limit=${args && args.limit}&page=${
+          args && args.page ? parseInt(args.page) - 1 : ''
+        }`,
       }),
       providesTags: ['Employee'],
     }),
@@ -42,15 +41,25 @@ export const employeeAPI = createApi({
       }),
       invalidatesTags: ['Employee'],
     }),
-    getByIdDepartment: build.query<Employee[], string>({
-      query: (id) => ({
-        url: `/employee/get-department/${id}`,
+    getByIdDepartment: build.query<
+      getDataList<Employee>,
+      queryPagination & { id: number }
+    >({
+      // query: (args) => ({
+      //   url: `/employee/get-department/${args.id}?limit=${
+      //     args && args.limit?.length ? args.limit : ''
+      //   }&page=${args && args.page?.length ? parseInt(args.page) - 1 : ''}}`,
+      // }),
+      query: (args) => ({
+        url: `/employee/get-department/${args.id}`,
       }),
       providesTags: ['Employee'],
     }),
-    getByBank: build.query<Employee[], void>({
-      query: () => ({
-        url: `/employee/get-bank`,
+    getByBank: build.query<getDataList<Employee>, queryPagination | void>({
+      query: (args) => ({
+        url: `/employee/get-bank?limit=${
+          args && args.limit ? args.limit : ''
+        }&page=${args && args.page ? parseInt(args.page) - 1 : ''}`,
       }),
       providesTags: ['Employee'],
     }),

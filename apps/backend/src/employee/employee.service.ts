@@ -38,19 +38,19 @@ export class EmployeeService {
     delete employee.password;
     return employee;
   }
-  async get(query: queryPagination) {
-    const total = await this.prisma.employee.count();
-    if (query.limit === '-1' || !query.limit || !query.page) {
-      const employee = await this.prisma.employee.findMany({
-        where: {
-          NOT: {
-            role: Role.ADMIN,
-          },
-          isWork: true,
+  async get(dto: queryPagination) {
+    const total = await this.prisma.employee.count({
+      where: {
+        NOT: {
+          role: Role.ADMIN,
         },
-      });
-      return { total, employee };
-    }
+        isWork: true,
+      },
+    });
+    const limit =
+      !parseInt(dto.limit) || dto.limit === '-1' ? total : parseInt(dto.limit);
+    const page =
+      parseInt(dto.limit) && parseInt(dto.page) ? parseInt(dto.page) : 0;
     const employee = await this.prisma.employee.findMany({
       where: {
         NOT: {
@@ -58,10 +58,10 @@ export class EmployeeService {
         },
         isWork: true,
       },
-      skip: parseInt(query.page) * parseInt(query.limit),
-      take: parseInt(query.limit),
+      skip: page * limit,
+      take: limit,
     });
-    return { total, employee };
+    return { value: employee, total };
   }
 
   async getById(id: number) {
@@ -69,8 +69,18 @@ export class EmployeeService {
       where: { id },
     });
   }
-  async getByIdDepartment(id: number) {
-    return await this.prisma.employee.findMany({
+  async getByIdDepartment(id: number, dto?: queryPagination) {
+    const total = await this.prisma.employee.count({
+      where: {
+        departmentId: id,
+        isWork: true,
+      },
+    });
+    const limit =
+      !parseInt(dto.limit) || dto.limit === '-1' ? total : parseInt(dto.limit);
+    const page =
+      parseInt(dto.limit) && parseInt(dto.page) ? parseInt(dto.page) : 0;
+    const employee = await this.prisma.employee.findMany({
       where: {
         departmentId: id,
         NOT: {
@@ -78,15 +88,28 @@ export class EmployeeService {
         },
         isWork: true,
       },
+      skip: page * limit,
+      take: limit,
     });
+    return { value: employee, total };
   }
-  async getByBank() {
+  async getByBank(dto?: queryPagination) {
     const bank = await this.prisma.department.findFirst({
       where: {
         type: DepartmentType.BANK,
       },
     });
-    return this.getByIdDepartment(bank.id);
+    const total = await this.prisma.employee.count({
+      where: {
+        departmentId: bank.id,
+        isWork: true,
+      },
+    });
+    const limit =
+      !parseInt(dto.limit) || dto.limit === '-1' ? total.toString() : dto.limit;
+    const page = parseInt(dto.limit) && parseInt(dto.page) ? dto.page : '0';
+    const employee = await this.getByIdDepartment(bank.id, { limit, page });
+    return { value: employee.value, total };
   }
   async getAdmin() {
     return await this.prisma.employee.findFirst({
@@ -105,19 +128,31 @@ export class EmployeeService {
       },
     });
   }
-  async getNotWork() {
-    return this.prisma.employee.findMany({
+  async getNotWork(dto?: queryPagination) {
+    const total = await this.prisma.employee.count({
       where: {
         isWork: false,
       },
     });
+    const limit =
+      !parseInt(dto.limit) || dto.limit === '-1' ? total : parseInt(dto.limit);
+    const page =
+      parseInt(dto.limit) && parseInt(dto.page) ? parseInt(dto.page) : 0;
+    const employee = await this.prisma.employee.findMany({
+      where: {
+        isWork: false,
+      },
+      skip: page * limit,
+      take: limit,
+    });
+    return { value: employee, total };
   }
   async routate(id: number) {
     const candidate = await this.getById(id);
     if (!candidate) {
       throw new HttpException('Сотрудник не найден', HttpStatus.BAD_REQUEST);
     }
-    if (candidate.login === `${id}`) {
+    if (candidate.login === `delete-${id}`) {
       throw new HttpException(
         'Сперва обновите данные сотрудника(login)',
         HttpStatus.BAD_REQUEST
@@ -141,7 +176,7 @@ export class EmployeeService {
       data: {
         isWork: false,
         departmentId: bank.id,
-        login: `${id}`,
+        login: `delete-${id}`,
       },
     });
   }

@@ -27,7 +27,7 @@ const DepartmentCreateForm: React.FC<DepartmentCreateFormProps> = ({
           setStep(3);
         }
       })
-      .catch((e) => message.error(e.message));
+      .catch((e) => message.error(e.data.message));
   };
   const reset = () => {
     form.resetFields();

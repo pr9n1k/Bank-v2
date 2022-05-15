@@ -6,8 +6,13 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
-import { createEncashment, updateEncashment } from '@bank-v2/interface';
+import {
+  createEncashment,
+  queryPagination,
+  updateEncashment,
+} from '@bank-v2/interface';
 import { EncashmentService } from './encashment.service';
 
 @Controller('encashment')
@@ -34,8 +39,8 @@ export class EncashmentController {
     return this.service.getForCashier(parseInt(id));
   }
   @Get('get-admin')
-  getForAdmin() {
-    return this.service.getForAdmin();
+  getForAdmin(@Query() query?: queryPagination) {
+    return this.service.getForAdmin(query);
   }
   @Get('get-admin/:id')
   getByIdForAdmin(@Param('id') id: string) {

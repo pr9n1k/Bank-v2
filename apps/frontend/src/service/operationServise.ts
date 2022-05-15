@@ -1,6 +1,11 @@
 import { Operation } from '@prisma/client';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { createOperation, operationConfirm } from '@bank-v2/interface';
+import {
+  createOperation,
+  getDataList,
+  operationConfirm,
+  queryPagination,
+} from '@bank-v2/interface';
 
 export const operationAPI = createApi({
   reducerPath: 'operationAPI',
@@ -15,9 +20,14 @@ export const operationAPI = createApi({
       }),
       invalidatesTags: ['Operation'],
     }),
-    getNotConfirm: build.query<Operation[], number>({
+    getNotConfirm: build.query<
+      getDataList<Operation>,
+      queryPagination & { id: number }
+    >({
       query: (args) => ({
-        url: `/operation/get-not-confirm/${args}`,
+        url: `/operation/get-not-confirm/${args.id}?limit=${
+          args.limit && args.limit
+        }&page=${args && args.page ? parseInt(args.page) - 1 : ''}`,
       }),
       providesTags: ['Operation'],
     }),
@@ -29,39 +39,5 @@ export const operationAPI = createApi({
       }),
       invalidatesTags: ['Operation', 'Account'],
     }),
-    // addCommunal: build.mutation<Communal,Communal>({
-    //     query: (communal) => ({
-    //         url: '/operation/communal',
-    //         method: 'POST',
-    //         body: communal
-    //     }),
-    //     invalidatesTags:['Communal','Account']
-    // }),
-    // addEncashment: build.mutation<Encashment,Encashment>({
-    //     query: (encashment) => ({
-    //         url: 'operation/encashment',
-    //         method: 'POST',
-    //         body: encashment
-    //     }),
-    //     invalidatesTags:['Encashment']
-    // }),
-    // getByIdEncashment: build.query<Encashment,string>({
-    //     query: (id) => ({
-    //         url: `operation/encashment/${id}`
-    //     }),
-    //     providesTags:['Encashment']
-    // }),
-    // getAdmin: build.query<Encashment[],void>({
-    //     query: _ => ({
-    //         url: 'operation/encashment-admin'
-    //     }),
-    //     providesTags:['Encashment']
-    // }),
-    // getCashier: build.query<Encashment[],void>({
-    //     query: _ => ({
-    //         url: 'operation/encashment-cashier'
-    //     }),
-    //     providesTags:['Encashment']
-    // })
   }),
 });

@@ -1,11 +1,22 @@
-import { List } from 'antd';
-import React, { useState } from 'react';
+import { limit } from '@bank-v2/const';
+import { List, Pagination } from 'antd';
+import React from 'react';
 import { employeeAPI } from './../../../service/employeeService';
 import EmployeeItem from './EmployeeItem';
 
 const EmlpoyeeNotWorkList = () => {
-  const [page, setPage] = useState(1);
-  const { data: employee } = employeeAPI.useGetNotWorkQuery();
+  const [page, setPage] = React.useState('1');
+  const { data } = employeeAPI.useGetNotWorkQuery({
+    limit: limit,
+    page,
+  });
+  const onChange = (page: number) => {
+    setPage(page.toString());
+  };
+  const totalCount = data && data.total ? data.total : 0;
+  if (!data?.value.length) {
+    return <h1 className="h1 title">Список пуст</h1>;
+  }
   return (
     <>
       <div style={{ flex: '1 0 auto' }}>
@@ -19,7 +30,7 @@ const EmlpoyeeNotWorkList = () => {
             xl: 3,
             xxl: 3,
           }}
-          dataSource={employee}
+          dataSource={data.value}
           renderItem={(item, i) => (
             <List.Item key={i}>
               <EmployeeItem employee={item} />
@@ -27,15 +38,15 @@ const EmlpoyeeNotWorkList = () => {
           )}
         />
       </div>
-      {/* {totalCount > 6 && (
+      {totalCount > 6 && (
         <Pagination
-          current={page}
+          current={parseInt(page)}
           onChange={onChange}
           total={totalCount}
           defaultPageSize={6}
           defaultCurrent={1}
         />
-      )} */}
+      )}
     </>
   );
 };

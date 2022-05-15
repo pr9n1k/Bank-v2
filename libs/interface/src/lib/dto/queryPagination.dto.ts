@@ -1,4 +1,4 @@
 export type queryPagination = {
-  limit: string;
-  page: string;
+  limit?: string;
+  page?: string;
 };

@@ -2,6 +2,8 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 import {
   createEncashment,
   encashmentResponse,
+  getDataList,
+  queryPagination,
   updateEncashment,
 } from '@bank-v2/interface';
 import { Encashment, ValueEncashment } from '@prisma/client';
@@ -25,9 +27,11 @@ export const encashmentAPI = createApi({
       }),
       providesTags: ['Encashment'],
     }),
-    getAdmin: build.query<Encashment[], void>({
-      query: () => ({
-        url: `encashment/get-admin`,
+    getAdmin: build.query<getDataList<Encashment>, queryPagination | void>({
+      query: (args) => ({
+        url: `encashment/get-admin?limit=${args && args.limit}&page=${
+          args && args.page ? parseInt(args.page) - 1 : ''
+        }`,
       }),
       providesTags: ['Encashment'],
     }),

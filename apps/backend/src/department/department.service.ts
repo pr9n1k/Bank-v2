@@ -2,7 +2,11 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { AccountDepartmentService } from './../account/account-department/account-department.service';
 import { DepartmentType } from '@prisma/client';
-import { createDepartment, updateBankInfo } from '@bank-v2/interface';
+import {
+  createDepartment,
+  queryPagination,
+  updateBankInfo,
+} from '@bank-v2/interface';
 import { EmployeeService } from '../employee/employee.service';
 import { CurrencyArray } from '@bank-v2/const';
 
@@ -46,8 +50,8 @@ export class DepartmentService {
     });
     return department;
   }
-  async get() {
-    const departments = await this.prisma.department.findMany({
+  async get(dto?: queryPagination) {
+    const total = await this.prisma.department.count({
       where: {
         NOT: {
           OR: [
@@ -61,7 +65,27 @@ export class DepartmentService {
         },
       },
     });
-    return departments;
+    const limit =
+      !parseInt(dto.limit) || dto.limit === '-1' ? total : parseInt(dto.limit);
+    const page =
+      parseInt(dto.limit) && parseInt(dto.page) ? parseInt(dto.page) : 0;
+    const departments = await this.prisma.department.findMany({
+      where: {
+        NOT: {
+          OR: [
+            {
+              type: DepartmentType.BANK,
+            },
+            {
+              isWork: false,
+            },
+          ],
+        },
+      },
+      skip: page * limit,
+      take: limit,
+    });
+    return { value: departments, total };
   }
   async getById(id: number) {
     if (!id) {
@@ -103,11 +127,17 @@ export class DepartmentService {
     const countEmployee = await this.prisma.employee.count({
       where: {
         isWork: true,
+        NOT: {
+          departmentId: bank.id,
+        },
       },
     });
     const countDepartment = await this.prisma.department.count({
       where: {
         isWork: true,
+        NOT: {
+          id: bank.id,
+        },
       },
     });
     const account = await this.prisma.accountDepartment.findMany({

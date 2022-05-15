@@ -2,29 +2,31 @@ import { List, Pagination } from 'antd';
 import React, { useState } from 'react';
 import EmployeeItem from './EmployeeItem';
 import { employeeAPI } from './../../../service/employeeService';
-import { Link } from 'react-router-dom';
+import { limit } from '@bank-v2/const';
 
 const EmployeeList = () => {
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState('1');
   const { data, isLoading, error } = employeeAPI.useGetQuery({
-    limit: 6,
+    limit: limit,
     page,
   });
 
   const totalCount = data && data.total ? data.total : 0;
+  console.log(totalCount);
+
   const onChange = (page: number) => {
-    setPage(page);
+    setPage(page.toString());
   };
   if (isLoading) {
     return <h1>Загрузка...</h1>;
   }
-  if (data && !data.employee.length) {
+  if (data && !data.value.length) {
     return <h1 className="h1 title">Список пуст</h1>;
   }
   return (
     <>
       <h1 className="h1 title">Сотрудники</h1>
-      <div style={{ flex: '1 0 auto' }}>
+      <div className="flex-auto">
         <List
           grid={{
             gutter: 16,
@@ -35,7 +37,7 @@ const EmployeeList = () => {
             xl: 3,
             xxl: 3,
           }}
-          dataSource={data?.employee}
+          dataSource={data?.value}
           renderItem={(item, i) => (
             <List.Item key={i}>
               <EmployeeItem employee={item} />
@@ -45,7 +47,7 @@ const EmployeeList = () => {
       </div>
       {totalCount > 6 && (
         <Pagination
-          current={page}
+          current={parseInt(page)}
           onChange={onChange}
           total={totalCount}
           defaultPageSize={6}

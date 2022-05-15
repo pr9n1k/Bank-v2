@@ -24,17 +24,17 @@ export class ClientService {
       },
     });
   }
-  async get(dto: queryPagination) {
+  async get(dto?: queryPagination) {
     const total = await this.prisma.client.count();
-    if (dto.limit === '-1' || !dto.limit || !dto.page) {
-      const client = await this.prisma.client.findMany();
-      return { client, total };
-    }
+    const limit =
+      !parseInt(dto.limit) || dto.limit === '-1' ? total : parseInt(dto.limit);
+    const page =
+      parseInt(dto.limit) && parseInt(dto.page) ? parseInt(dto.page) : 0;
     const client = await this.prisma.client.findMany({
-      skip: parseInt(dto.page) * parseInt(dto.limit),
-      take: parseInt(dto.limit),
+      skip: page * limit,
+      take: limit,
     });
-    return { client, total };
+    return { value: client, total };
   }
   async getById(id: number) {
     if (!id) {

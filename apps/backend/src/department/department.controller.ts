@@ -1,4 +1,8 @@
-import { createDepartment, updateBankInfo } from '@bank-v2/interface';
+import {
+  createDepartment,
+  queryPagination,
+  updateBankInfo,
+} from '@bank-v2/interface';
 import {
   Body,
   Controller,
@@ -7,6 +11,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { DepartmentService } from './department.service';
 
@@ -20,8 +25,8 @@ export class DepartmentController {
   }
 
   @Get('get')
-  get() {
-    return this.service.get();
+  get(@Query() query?: queryPagination) {
+    return this.service.get(query);
   }
 
   @Get('get-bank')

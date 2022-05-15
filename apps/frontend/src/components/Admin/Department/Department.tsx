@@ -15,6 +15,7 @@ const Department = () => {
   const { data: account, isLoading: isLoadingAccount } =
     accountAPI.useGetByIdDepartmentQuery(department?.id || 0);
   const [deleteById] = departmentAPI.useDeleteByIdMutation();
+
   if (isLoadingAccount) {
     return <h1>Загрузка...</h1>;
   }

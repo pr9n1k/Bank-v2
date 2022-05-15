@@ -1,29 +1,31 @@
-import { List, Pagination, Button } from 'antd';
-import React, { useState } from 'react';
+import { List, Pagination } from 'antd';
+import React from 'react';
 import ClientItem from './ClientItem';
 import { clientAPI } from '../../../service/clientService';
-import { useNavigate } from 'react-router-dom';
+import { limit } from '@bank-v2/const';
 
 const ClientList = () => {
-  const navigate = useNavigate();
-  const [page, setPage] = useState(1);
-  const { data, isLoading, error } = clientAPI.useGetQuery({ limit: 6, page });
+  const [page, setPage] = React.useState('1');
+  const { data, isLoading } = clientAPI.useGetQuery({
+    limit: limit,
+    page,
+  });
   const totalCount = data && data.total ? data.total : 0;
   if (isLoading) {
     return <h1>Загрузка...</h1>;
   }
 
   const onChange = (page: number) => {
-    setPage(page);
+    setPage(page.toString());
   };
-  if (!data?.client.length) {
+  if (!data?.value.length) {
     return <h1>Список пуст</h1>;
   }
   return (
     <>
       <h1 className="h1 title">Клиенты</h1>
       <List
-        style={{ flex: '1 0 auto' }}
+        className="flex-auto"
         grid={{
           gutter: 16,
           xs: 1,
@@ -33,7 +35,7 @@ const ClientList = () => {
           xl: 3,
           xxl: 3,
         }}
-        dataSource={data?.client}
+        dataSource={data?.value}
         renderItem={(item, i) => (
           <List.Item key={i}>
             <ClientItem client={item} />
@@ -42,7 +44,7 @@ const ClientList = () => {
       />
       {totalCount > 6 && (
         <Pagination
-          current={page}
+          current={parseInt(page)}
           onChange={onChange}
           total={totalCount}
           defaultPageSize={6}

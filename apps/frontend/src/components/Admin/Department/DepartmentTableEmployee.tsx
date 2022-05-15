@@ -22,7 +22,8 @@ const DepartmentTableEmployee = () => {
   const depId = params['id'] || '';
 
   const { data: employee, isLoading: isLoadingDep } =
-    employeeAPI.useGetByIdDepartmentQuery(depId);
+    employeeAPI.useGetByIdDepartmentQuery({ id: parseInt(depId) });
+
   const { data: employeeBank, isLoading: isLoadingBank } =
     employeeAPI.useGetByBankQuery();
 
@@ -54,7 +55,6 @@ const DepartmentTableEmployee = () => {
     },
     {
       title: 'Действие',
-      //   dataIndex: 'idDepartment',
       key: 'action',
       render: (record: Employee) =>
         record.departmentId === Bank?.id ? (
@@ -70,17 +70,17 @@ const DepartmentTableEmployee = () => {
   ];
 
   const hundlerAdd = (id: number) => {
-    employeeBank &&
-      employeeBank.map((item) => {
+    employeeBank?.value &&
+      employeeBank.value.map((item) => {
         if (item.id === id) {
           update({ ...item, departmentId: parseInt(depId) });
         }
       });
   };
   const hundleDelete = (id: number) => {
-    employee &&
+    employee?.value &&
       Bank &&
-      employee.map((item) => {
+      employee.value.map((item) => {
         if (item.id === id) {
           update({ ...item, departmentId: Bank?.id });
         }
@@ -89,8 +89,8 @@ const DepartmentTableEmployee = () => {
   const dataTable: dataTableType[] = [];
   let index = 0;
   if (!isLoadingDep && !isLoadingBank) {
-    employee &&
-      employee.forEach((item, i) => {
+    employee?.value &&
+      employee.value.forEach((item, i) => {
         const role = updateValueRole(item.role);
         dataTable.push({
           key: i,
@@ -104,8 +104,8 @@ const DepartmentTableEmployee = () => {
         });
         index++;
       });
-    employeeBank &&
-      employeeBank.forEach((item, i) => {
+    employeeBank?.value &&
+      employeeBank.value.forEach((item, i) => {
         const role = updateValueRole(item.role);
         i += index;
         if (item.role !== 'ADMIN' && visible) {

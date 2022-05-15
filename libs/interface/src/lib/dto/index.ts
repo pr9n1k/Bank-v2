@@ -19,3 +19,4 @@ export * from './create/encashment.dto';
 export * from './create/encashmentValue.dto';
 export * from './response/encashment.dto';
 export * from './response/infoBank.dto';
+export * from './response/getDataList.dto';

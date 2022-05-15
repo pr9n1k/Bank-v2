@@ -103,25 +103,23 @@ const EmployeeForm: FC<CreateEmployeeFormType> = ({
           minLength={10}
         />
       </Form.Item>
-      <Form.Item
-        name="role"
-        rules={setStep ? [] : [rules.required()]}
-        // initialValue={employee.role as string}
-      >
-        <Select
-          placeholder="Выберите роль"
-          onChange={(e) => setEmployee({ ...employee, role: e })}
-          disabled={setStep ? true : false}
-          value={setStep ? Role.ADMIN : Role.OPERATOR}
-        >
-          <Select.Option key={1} value={Role.OPERATOR}>
-            Операционист
-          </Select.Option>
-          <Select.Option key={2} value={Role.CASHIER}>
-            Кассир
-          </Select.Option>
-        </Select>
-      </Form.Item>
+      {!setStep && (
+        <Form.Item name="role" rules={setStep ? [] : [rules.required()]}>
+          <Select
+            placeholder="Выберите роль"
+            onChange={(e) => setEmployee({ ...employee, role: e })}
+            disabled={setStep ? true : false}
+            value={setStep ? Role.ADMIN : Role.OPERATOR}
+          >
+            <Select.Option key={1} value={Role.OPERATOR}>
+              Операционист
+            </Select.Option>
+            <Select.Option key={2} value={Role.CASHIER}>
+              Кассир
+            </Select.Option>
+          </Select>
+        </Form.Item>
+      )}
       <Form.Item>
         <Button type="primary" htmlType="submit" loading={isLoading}>
           {titleButton}

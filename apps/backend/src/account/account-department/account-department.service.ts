@@ -39,6 +39,9 @@ export class AccountDepartmentService {
     });
   }
   async getByIdDepartment(id: number) {
+    if (id === 0) {
+      return null;
+    }
     if (!id) {
       throw new HttpException('Id не указан', HttpStatus.BAD_REQUEST);
     }

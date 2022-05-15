@@ -1,4 +1,10 @@
-import { createDepartment, infoBank, updateBankInfo } from '@bank-v2/interface';
+import {
+  createDepartment,
+  getDataList,
+  infoBank,
+  queryPagination,
+  updateBankInfo,
+} from '@bank-v2/interface';
 import { Department } from '@prisma/client';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
 
@@ -15,9 +21,11 @@ export const departmentAPI = createApi({
       }),
       invalidatesTags: ['Department'],
     }),
-    get: build.query<Department[], void>({
-      query: () => ({
-        url: '/department/get',
+    get: build.query<getDataList<Department>, queryPagination | void>({
+      query: (args) => ({
+        url: `/department/get?limit=${args ? args.limit : ''}&page=${
+          args && args.page ? parseInt(args.page) - 1 : ''
+        }`,
       }),
       providesTags: ['Department', 'Employee'],
     }),

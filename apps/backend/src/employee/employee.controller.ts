@@ -35,13 +35,13 @@ export class EmployeeController {
   }
 
   @Get('get-department/:id')
-  getByIdDepartment(@Param('id') id: string) {
-    return this.service.getByIdDepartment(parseInt(id));
+  getByIdDepartment(@Param('id') id: string, @Query() query?: queryPagination) {
+    return this.service.getByIdDepartment(parseInt(id), query);
   }
 
   @Get('get-bank')
-  getByBank() {
-    return this.service.getByBank();
+  getByBank(@Query() query?: queryPagination) {
+    return this.service.getByBank(query);
   }
   @Get('get-admin')
   getByAdmin() {
@@ -54,8 +54,8 @@ export class EmployeeController {
   }
 
   @Get('get-not-work')
-  getNotWork() {
-    return this.service.getNotWork();
+  getNotWork(@Query() query?: queryPagination) {
+    return this.service.getNotWork(query);
   }
 
   @Put()

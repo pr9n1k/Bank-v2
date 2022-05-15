@@ -1,6 +1,6 @@
 import { Client } from '@prisma/client';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { createClient } from '@bank-v2/interface';
+import { createClient, getDataList, queryPagination } from '@bank-v2/interface';
 
 export const clientAPI = createApi({
   reducerPath: 'clientAPI',
@@ -15,25 +15,12 @@ export const clientAPI = createApi({
       }),
       invalidatesTags: ['Client'],
     }),
-    get: build.query<
-      {
-        client: Client[];
-        total: number;
-      },
-      {
-        limit: number;
-        page: number;
-      }
-    >({
-      query: (args = { limit: -1, page: 1 }) => ({
-        url: `/client/get?limit=${args.limit}&page=${args.page - 1}`,
+    get: build.query<getDataList<Client>, queryPagination | void>({
+      query: (args) => ({
+        url: `/client/get?limit=${args && args.limit}&page=${
+          args && args.page ? parseInt(args.page) - 1 : ''
+        }`,
       }),
-      //   transformResponse(response: Client[], meta) {
-      //     return {
-      //       client: response,
-      //       number: Number(meta?.response?.headers.get('X-Total-Count')),
-      //     };
-      //   },
       providesTags: ['Client'],
     }),
     getById: build.query<Client, number>({

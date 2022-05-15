@@ -1,6 +1,7 @@
 import {
   createEncashment,
   createEncashmentValue,
+  queryPagination,
   updateEncashment,
 } from '@bank-v2/interface';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
@@ -212,8 +213,8 @@ export class EncashmentService {
     }
     return null;
   }
-  async getForAdmin() {
-    return await this.prisma.encashment.findMany({
+  async getForAdmin(dto?: queryPagination) {
+    const total = await this.prisma.encashment.count({
       where: {
         isAdmin: false,
         OR: [
@@ -228,6 +229,28 @@ export class EncashmentService {
         ],
       },
     });
+    const limit =
+      !parseInt(dto.limit) || dto.limit === '-1' ? total : parseInt(dto.limit);
+    const page =
+      parseInt(dto.limit) && parseInt(dto.page) ? parseInt(dto.page) : 0;
+    const encashment = await this.prisma.encashment.findMany({
+      where: {
+        isAdmin: false,
+        OR: [
+          {
+            type: TypeEncashment.ENCASHMENT,
+            isCashier: true,
+          },
+          {
+            type: TypeEncashment.REINFORCEMENT,
+            isCashier: false,
+          },
+        ],
+      },
+      skip: page * limit,
+      take: limit,
+    });
+    return { value: encashment, total };
   }
   async getByIdForAdmin(id: number) {
     const encashment = await this.prisma.encashment.findUnique({
